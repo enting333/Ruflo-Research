@@ -54,7 +54,7 @@ jobs:
         run: |
           mkdir -p outputs
 
-          claude -p "$(cat <<'EOF'
+          npx @anthropic-ai/claude-code@latest -p "$(cat <<'EOF'
           You are running inside GitHub Actions.
 
           Use Ruflo as the orchestration/MCP/plugin layer.
@@ -69,13 +69,6 @@ jobs:
           - Produce both outputs:
             1. outputs/research-digest.md
             2. outputs/research-payload.json
-
-          Before writing final files, verify that the protocol sections are present:
-          Marine Autonomy & Reasoning,
-          Hydrodynamics,
-          Marine Technologies,
-          AUV Systems & Swarms,
-          General Robotics & AI.
 
           Now execute the research workflow described in protocol.txt.
           EOF
