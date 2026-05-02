@@ -33,6 +33,18 @@ jobs:
       - name: Install project dependencies
         run: npm install
 
+      - name: Install Claude Clode CLI
+        run: npm install -g @anthropic-ai/claude-code
+        
+      - name: Ensure Daemon Runs
+        run: npx ruflo@latest start 
+        
+      - name: MCP Config
+        run: npx ruflo@latest mcp add
+        
+      - name: Initialise Memory DB
+        run: npx ruflo@latest memory init
+        
       - name: Run Ruflo research swarm
         run: npm run research -- protocol.txt
 
