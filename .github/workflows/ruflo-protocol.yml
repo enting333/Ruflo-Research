@@ -32,7 +32,10 @@ jobs:
       
       - name: Checkout repo
         uses: actions/checkout@v4
-      
+        
+      - name: Install Claude
+        run: npm install -g @anthropic-ai/claude-code@latest
+        
       - name: Install dependencies
         run: npm install
       
@@ -49,7 +52,7 @@ jobs:
         run: |
           test -f protocol.txt
           echo "protocol.txt found"
-
+        
       - name: Run Claude with Ruflo protocol
         run: |
           mkdir -p outputs
