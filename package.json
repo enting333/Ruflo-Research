@@ -7,7 +7,12 @@
     "research": "node scripts/run-ruflo-research.mjs"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
-  "devDependencies": {}
+  "dependencies": {
+    "agentic-flow": "latest"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.0"
+  }
 }
