@@ -45,15 +45,44 @@ jobs:
       - name: Start Ruflo daemon
         run: npx ruflo@latest start
       
-      - name: Run Ruflo research swarm
-        run: npm run research -- protocol.txt
-      - name: Upload digest artifacts
+      - name: Verify protocol exists
+        run: |
+          test -f protocol.txt
+          echo "protocol.txt found"
+
+      - name: Run Claude with Ruflo protocol
+        run: |
+          mkdir -p outputs
+
+          claude -p "$(cat <<'EOF'
+          You are running inside GitHub Actions.
+
+          Use Ruflo as the orchestration/MCP/plugin layer.
+
+          Read the file protocol.txt from the repository root.
+          Follow protocol.txt exactly.
+
+          Important:
+          - Treat protocol.txt as the source of truth.
+          - Enforce the strict 7-day research window.
+          - Use the available API keys from environment variables.
+          - Produce both outputs:
+            1. outputs/research-digest.md
+            2. outputs/research-payload.json
+
+          Before writing final files, verify that the protocol sections are present:
+          Marine Autonomy & Reasoning,
+          Hydrodynamics,
+          Marine Technologies,
+          AUV Systems & Swarms,
+          General Robotics & AI.
+
+          Now execute the research workflow described in protocol.txt.
+          EOF
+          )"
+
+      - name: Upload research outputs
         uses: actions/upload-artifact@v4
         with:
-          name: ruflo-research-digest
-          path: |
-            dist/ruflo-prompt.txt
-            dist/ruflo-research.md
-            dist/ruflo-research.json
-            dist/ruflo-research.raw.json
-          if-no-files-found: warn
+          name: ruflo-research-output
+          path: outputs/
