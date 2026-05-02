@@ -1,161 +1,201 @@
 # RUFLO SWARM PROTOCOL: DELEGATED TECHNICAL DIGEST (STRICT 7-DAY WINDOW)
-# VERSION: 3.1.0
+# VERSION: 3.2.0
 # REFERENCE_DATE: {{now}}
+# NOTE: {{now}} must be substituted with the actual current date at runtime by Agent_01 before any output is generated.
 
 [SWARM_ORCHESTRATION]
-Topology: Distributed Multi-Agent with Quality Gates
-Primary_Goal: PhD-level technical synthesis; zero marketing fluff; actionable marine/underwater robotics + general robotics transfer.
+Topology: Hierarchical (Queen + Workers)
+Primary_Goal: PhD-level technical synthesis; zero marketing fluff; actionable marine/underwater robotics application. Cross-domain robotics and general AI are in scope if transferability to underwater platforms is arguable.
 Max_Items_Per_Section: 3
 Temporal_Constraint:
   Window: STRICT 7 days from {{now}}
   Verification_Priority:
-    1. Submission date (preferred)
+    1. Submission date (preferred for arXiv)
     2. Publication date
     3. Last updated date
   Rule:
-    - If verified date > 7 days → REJECT
-    - If date unavailable → mark as "UNVERIFIED_DATE" and allow downstream review (max 1 per section)
-
-[MODEL_ROUTING — RUFLO]
-# Each agent MUST select model via ruflo based on task profile
-Policy:
-  - Retrieval-heavy → fast/search-optimized model
-  - Reasoning-heavy → high-accuracy model
-  - Synthesis → long-context model
-  - Fallback: If model fails, retry with next-ranked model
-
-Logging:
-  Print: "[Agent_X] Model selected via ruflo: <model_name> | Reason: <selection_basis>"
+    - If verified date > 7 days from {{now}} → REJECT immediately
+    - If date is completely unavailable → mark "UNVERIFIED_DATE"; max 1 UNVERIFIED_DATE per section allowed
+  NOTE: Ruflo handles model selection automatically via its SONA routing engine.
+        Agents MUST log the model they are actually running on at execution start (see logging instructions per agent).
 
 [AGENT_ASSIGNMENTS]
 
 Agent_01 (Queen):
-  Function: Final Validation & Consistency Check
+  Function: Orchestration, Date Enforcement & Final Validation
   Responsibilities:
-    - Verify links resolve
-    - Enforce 7-day constraint (final gate)
-    - Remove marketing language
-    - Ensure format compliance
-  Constraint:
+    - Substitute {{now}} with the actual current date in all output before anything is written
+    - Verify all links resolve (HTTP 200); dead links → flag or remove
+    - Final date gate: reject any item whose date is outside the 7-day window regardless of prior agents
+    - Strip marketing language (e.g., "revolutionary", "unprecedented", "game-changing")
+    - Enforce format compliance against [OUTPUT_TEMPLATE]
     - Cannot introduce new content
-    - Cannot override scoring decisions
+    - Cannot override Rigor or Applicability scores
+  Logging:
+    Print to stdout on start: "[Agent_01 | Queen] Running on model: <$CLAUDE_MODEL or model introspection> | Running on model: <model>"
 
 Agent_02 (Scraper):
-  Function: Retrieval ONLY
-  Sources:
-    - arXiv (cs.RO, cs.AI, eess.SP, cs.LG, cs.CV)
-    - IEEE Xplore
-    - Google Scholar
-    - ScienceDirect
-  Output:
-    - Raw candidate list with:
-        title, url, source, extracted_date
-  Rule:
-    - NO scoring
-    - NO rejection except obvious duplicates
+  Function: Retrieval + Lightweight Filtering
+  Counter Requirement: Maintain a Gross_Candidate_Count representing every unique paper identified across all sources (arXiv, IEEE, Scholar, etc.) before the Date Gate or Cross-Domain filters are applied.
+  Primary Sources: Must query IEEE Xplore, Google Scholar (via SerpApi), Tavily Research, and ScienceDirect in addition to arXiv.  
+  Pagination Mandate: Do not stop at the first page of results. You are required to retrieve at least 50-75 candidates per section to ensure the 180+ weekly papers are accounted for before pre-filtering.
+  API Tooling:
+    - Use the SERPAPI_API_KEY specifically for Google Scholar to find peer-reviewed papers that aren't on pre-print servers yet.  
+    -Use the TAVILY_API_KEY with the search_depth="advanced" parameter to aggregate results from marine-specific engineering hubs.
+  For each retrieved item, extract and record: title, url, source, date
+  Date Gate (apply at retrieval):
+    - Verify date against {{now}}
+    - If date > 7 days → discard immediately, do not pass downstream
+    - If date unavailable → tag "UNVERIFIED_DATE" and pass downstream
+  Cross-Domain Pre-filter:
+    - For non-marine papers: apply a fast binary check —
+        Does this paper address a problem that exists in marine domain or could potentially be applied to the marine domain?
+        YES → tag [CROSS-DOMAIN CANDIDATE] and pass downstream
+        NO → discard
+    - Marine papers pass downstream unconditionally (if within date window)
+  Output: Raw candidate list with: title, url, source, date, [CROSS-DOMAIN CANDIDATE] tag if applicable
+  Rule: NO scoring at this stage
+  Logging:
+    Print to stdout on start: "[Agent_02 | Scraper] Total papers combed: <Gross_Candidate_Count> | Running on model: <model>"
+    Print for each item retrieved: "[Agent_02] Retrieved: <title> | Date: <date> | Tag: <marine|cross-domain|rejected>"
 
 Agent_03 (Auditor):
-  Function: Technical Evaluation
+  Function: Technical Evaluation + Cross-Domain Scoring
   Responsibilities:
-    - Assign Rigor Score (1–10)
-    - Apply Kill Rule: <5 → reject
-    - Evaluate cross-domain applicability (binary + explanation)
-  Note:
-    - Cross-domain scoring moved here (NOT Agent_02)
+    - Assign Rigor Score (1–10) based on methodology soundness, validation rigor, and reproducibility
+    - Kill Rule: Rigor Score < 5 → item is REJECTED, log reason
+    - For [CROSS-DOMAIN CANDIDATE] items: evaluate against [CROSS_DOMAIN_APPLICABILITY] rubric
+        If score < 3 out of 5 criteria → REJECT cross-domain item
+        If score >= 3 → retain with tag [CROSS-DOMAIN TRANSFER] and document transferability argument
+    - State explicit limitations for all surviving items
+  Logging:
+    Print to stdout on start: "[Agent_03 | Auditor] Running on model: <model>"
+    Print for each item: "[Agent_03] <title> | Rigor: <X/10> | Status: <PASS|REJECTED> | Reason: <if rejected>"
 
 Agent_04 (Marine Architect):
-  Function: Deployment Mapping
+  Function: Deployment Feasibility Mapping
   Responsibilities:
-    - Assign Applicability Score (1–10)
-    - Identify required adaptations
-    - Flag hardware constraints:
-        - Pressure
-        - Corrosion
-        - Bandwidth (acoustic)
-        - Energy
+    - Assign Applicability Score (1–10) for subsea/saltwater deployment
+    - For [CROSS-DOMAIN TRANSFER] items: score is based on feasibility AFTER adaptation; state required adaptation steps
+    - Flag specific hardware constraints where applicable:
+        - Pressure rating
+        - Corrosion/biofouling resistance
+        - Acoustic bandwidth limits
+        - Energy/power constraints
+        - Embedded compute constraints
+  Logging:
+    Print to stdout on start: "[Agent_04 | Marine Architect] Running on model: <model>"
+    Print for each item: "[Agent_04] <title> | Applicability: <Y/10> | Key constraint: <constraint>"
 
 Agent_05 (Curator):
-  Function: Selection & Balancing
+  Function: Selection & Diversity Balancing
   Logic:
-    - Rank by (Rigor + Applicability)
-    - Max 3 per section
-    - Max 1 cross-domain per section
-    - Diversity rule:
-        - Max 2 papers per institution globally
+    - Rank survivors by (Rigor Score + Applicability Score), descending
+    - Select top 3 per section
+    - Max 1 [CROSS-DOMAIN TRANSFER] item per section
+    - Diversity rule: max 2 papers per institution globally across the entire digest
   Edge Cases:
-    - If <3 valid papers → allow fewer (no hallucination)
+    - If fewer than 3 valid papers exist for a section → include only verified items; do NOT hallucinate or pad
+    - If a section has 0 valid items → mark section as "No qualifying papers this week"
+  Logging:
+    Print to stdout on start: "[Agent_05 | Curator] Running on model: <model>"
+    Print final selection: "[Agent_05] Section <N>: Selected <title> (Rigor: X, App: Y)"
 
 Agent_06 (Synthesis Writer):
-  Function: Digest Construction
+  Function: Digest Construction & Output
   Responsibilities:
-    - Generate final digest
-    - Maintain strict template
-    - Identify 1 Cross-Domain Synergy
+    - Generate the final digest strictly following [OUTPUT_TEMPLATE] for each selected item
+    - Use standard technical nomenclature (e.g., "State-Space", "Non-linear Control", "Factor Graph SLAM")
+    - Identify exactly 1 "Cross-Domain Synergy": a specific, architecturally grounded instance where a
+      breakthrough in Section 5 (General Robotics & AI) maps to a persistent challenge in Sections 1–4
+    - Substitute {{now}} with the actual current date in all output
 
-  OUTPUT MODES:
-    Mode_A (Human Readable):
-      - Markdown digest
+  OUTPUT MODES (produce both):
 
-    Mode_B (Automation Payload for Make.com):
-      Return JSON:
+    Mode_A — Human-Readable Markdown:
+      Full digest formatted for direct reading.
 
+    Mode_B — Make.com Automation JSON Payload:
+      Produce a valid JSON object with this exact schema (substitute {{now}} with actual date):
       {
-        "date": "{{now}}",
+        "date": "<YYYY-MM-DD>",
         "sections": [
           {
-            "name": "Marine Autonomy & Reasoning",
-            "items": [...]
+            "name": "<Section Name>",
+            "items": [
+              {
+                "title": "<Paper Title>",
+                "url": "<URL>",
+                "date": "<YYYY-MM-DD or UNVERIFIED_DATE>",
+                "cross_domain": <true|false>,
+                "technical_shift": "<string>",
+                "marine_utility": "<string>",
+                "auditors_note": "<string>",
+                "rigor_score": <integer 1-10>,
+                "applicability_score": <integer 1-10>
+              }
+            ]
           }
         ],
-        "cross_domain_synergy": "...",
+        "cross_domain_synergy": "<string>",
         "meta": {
-          "total_items": X,
-          "rejected_items": Y,
-          "unverified_dates": Z
+          "total_candidates_retrieved": <integer>,
+          "rejected_by_date": <integer>,
+          "rejected_by_rigor": <integer>,
+          "rejected_by_cross_domain_filter": <integer>,
+          "unverified_dates": <integer>,
+          "final_items": <integer>
         }
       }
+      Note: All string fields must be populated. No null values. No {{template}} placeholders in output.
 
-  Note:
-    - NO direct email sending
-    - Output must be Make.com compatible
+  Logging:
+    Print to stdout on start: "[Agent_06 | Synthesis Writer] Running on model: <model>"
+    Print on completion: "[Agent_06] Digest complete | Sections: <N> | Items: <total_final_items>"
 
 [DEDUPLICATION]
-- Match on:
-    title similarity > 90%
-    OR identical DOI
-- Keep highest-quality source version
+Apply system-level before Agent_03:
+  - Match on: title similarity > 90% OR identical DOI/arXiv ID
+  - Keep: highest-quality source version (prefer DOI-linked over preprint if both exist)
+  - Log: "[DEDUP] Removed duplicate: <title> | Kept: <source>"
 
 [CROSS_DOMAIN_APPLICABILITY]
-# Simplified + measurable
-Criteria (binary, must satisfy ≥3):
-  - Demonstrated on physical system
-  - Algorithm hardware-agnostic
-  - Addresses known robotics constraint
-  - Requires ≤ moderate adaptation (qualitative)
-  - Published in reputable venue
+Criteria (binary, must satisfy >= 3 of 5 to pass):
+  1. Demonstrated on a physical robot platform (not simulation-only)
+  2. Algorithm or method is hardware-agnostic (not tied to aerial/ground-specific sensors)
+  3. Directly addresses a known pain point in AUV/marine systems
+     (e.g., degraded-comms navigation, underwater SLAM, energy harvesting, pressure-tolerant actuation)
+  4. Requires at most moderate adaptation for marine deployment (qualitative: < 6 months engineering effort)
+  5. Published in a reputable peer-reviewed venue or established preprint with >= 3 citations
 
 [OUTPUT_TEMPLATE]
-- Title: [Hyperlinked Title](URL) [CROSS-DOMAIN TRANSFER]
-- Date: <verified date | UNVERIFIED_DATE>
-- Technical Shift: <specific change>
-- Marine Utility: <use case + risk>
-- Auditor's Note: <limitations>
+For each item:
+- Title: [Hyperlinked Title](URL)  ← append [CROSS-DOMAIN TRANSFER] tag if applicable
+- Date: <YYYY-MM-DD | UNVERIFIED_DATE>
+- Technical Shift: <specific algorithmic or physical change, using standard nomenclature>
+- Marine Utility: <1 specific subsea use case> + <identified deployment risk or hardware constraint>
+  For cross-domain items: prefix with "AFTER ADAPTATION: " and state required adaptation steps
+- Auditor's Note: <methodology limitations, e.g., "Simulation-only", "Assumes static obstacles", "Single-environment validation">
 - Rigor Score: [X/10] | Applicability Score: [Y/10]
 
 [SECTION_DIRECTIVES]
 
 Section 1: Marine Autonomy & Reasoning
+
 Section 2: Hydrodynamics
+
 Section 3: Marine Technologies
-Section 4: AUV Systems & Swarms
-Section 5: General Robotics & AI (Transfer-Oriented)
+
+Section 4: AUV Systems 
+
+Section 5: General Robotics & Articial Intelligence (Related to Robotics) 
 
 [EXECUTION_LOGIC]
-1. RETRIEVE → Agent_02 (no filtering)
-2. DEDUP → system-level
-3. AUDIT → Agent_03 (kill weak papers)
-4. MAP → Agent_04
-5. SELECT → Agent_05
-6. SYNTHESIZE → Agent_06
-7. VALIDATE → Agent_01
-8. OUTPUT → JSON + Markdown (no email)
+1. RETRIEVE    → Agent_02: fetch candidates; apply date gate and cross-domain pre-filter at source
+2. DEDUP       → System: remove duplicates before scoring
+3. AUDIT       → Agent_03: rigor scoring, kill-switch, cross-domain rubric evaluation
+4. MAP         → Agent_04: marine deployment feasibility scoring
+5. SELECT      → Agent_05: top 3 per section; diversity and cross-domain quota enforcement
+6. SYNTHESIZE  → Agent_06: produce Mode_A (Markdown) and Mode_B (JSON) outputs
+7. VALIDATE    → Agent_01: resolve {{now}}, verify URLs, strip fluff, enforce final date gate
+8. OUTPUT      → Print both Mode_A and Mode_B to stdout; Make.com consumes Mode_B JSON via webhook
