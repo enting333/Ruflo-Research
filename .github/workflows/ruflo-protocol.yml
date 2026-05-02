@@ -1,4 +1,4 @@
-name: Ruflo Protocol Digest
+name: Ruflo Research Digest
 
 on:
   workflow_dispatch:
@@ -7,12 +7,19 @@ on:
 
 permissions:
   contents: read
-  actions: read
+
+env:
+  NODE_ENV: production
+  ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+  GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+  OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+  TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
+  SERPAPI_API_KEY: ${{ secrets.SERPAPI_API_KEY }}
 
 jobs:
-  run-ruflo-protocol:
+  research:
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 60
 
     steps:
       - name: Checkout repository
@@ -21,29 +28,21 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "18"
 
-      - name: Validate protocol.txt
-        run: node scripts/validate-protocol.mjs
+      - name: Install project dependencies
+        run: npm install
 
-      - name: Install Ruflo
-        run: npm install -g ruflo@latest
+      - name: Run Ruflo research swarm
+        run: npm run research -- protocol.txt
 
-      - name: Execute Ruflo protocol
-        env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
-          SERPAPI_API_KEY: ${{ secrets.SERPAPI_API_KEY }}
-        run: npm run run:protocol
-
-      - name: Upload outputs
+      - name: Upload digest artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ruflo-protocol-output
+          name: ruflo-research-digest
           path: |
-            ruflo-output.json
-            ruflo-output.md
-            ruflo-run-metadata.json
+            dist/ruflo-prompt.txt
+            dist/ruflo-research.md
+            dist/ruflo-research.json
+            dist/ruflo-research.raw.json
           if-no-files-found: warn
