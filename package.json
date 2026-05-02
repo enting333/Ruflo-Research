@@ -1,11 +1,10 @@
 {
-  "name": "ruflo-github-runner",
+  "name": "ruflo-research-digest",
   "version": "1.0.0",
   "private": true,
   "type": "module",
   "scripts": {
-    "run:protocol": "node scripts/run-protocol.mjs",
-    "validate:protocol": "node scripts/validate-protocol.mjs"
+    "research": "node scripts/run-ruflo-research.mjs"
   },
   "engines": {
     "node": ">=18"
