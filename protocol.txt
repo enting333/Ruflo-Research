@@ -1,20 +1,18 @@
 # RUFLO SWARM PROTOCOL: DELEGATED TECHNICAL DIGEST (STRICT 7-DAY WINDOW)
 # VERSION: 3.2.0
-# REFERENCE_DATE: {{now}}
-# NOTE: {{now}} must be substituted with the actual current date at runtime by Agent_01 before any output is generated.
 
 [SWARM_ORCHESTRATION]
 Topology: Hierarchical (Queen + Workers)
 Primary_Goal: PhD-level technical synthesis; zero marketing fluff; actionable marine/underwater robotics application. Cross-domain robotics and general AI are in scope if transferability to underwater platforms is arguable.
 Max_Items_Per_Section: 3
 Temporal_Constraint:
-  Window: STRICT 7 days from {{now}}
+  Window: STRICT 7 days from today
   Verification_Priority:
     1. Submission date (preferred for arXiv)
     2. Publication date
     3. Last updated date
   Rule:
-    - If verified date > 7 days from {{now}} → REJECT immediately
+    - If verified date > 7 days from today → REJECT immediately
     - If date is completely unavailable → mark "UNVERIFIED_DATE"; max 1 UNVERIFIED_DATE per section allowed
   NOTE: Ruflo handles model selection automatically via its SONA routing engine.
         Agents MUST log the model they are actually running on at execution start (see logging instructions per agent).
@@ -24,7 +22,7 @@ Temporal_Constraint:
 Agent_01 (Queen):
   Function: Orchestration, Date Enforcement & Final Validation
   Responsibilities:
-    - Substitute {{now}} with the actual current date in all output before anything is written
+    - Substitute today with the actual current date in all output before anything is written
     - Verify all links resolve (HTTP 200); dead links → flag or remove
     - Final date gate: reject any item whose date is outside the 7-day window regardless of prior agents
     - Strip marketing language (e.g., "revolutionary", "unprecedented", "game-changing")
@@ -44,7 +42,7 @@ Agent_02 (Scraper):
     -Use the TAVILY_API_KEY with the search_depth="advanced" parameter to aggregate results from marine-specific engineering hubs.
   For each retrieved item, extract and record: title, url, source, date
   Date Gate (apply at retrieval):
-    - Verify date against {{now}}
+    - Verify date against today
     - If date > 7 days → discard immediately, do not pass downstream
     - If date unavailable → tag "UNVERIFIED_DATE" and pass downstream
   Cross-Domain Pre-filter:
@@ -108,7 +106,7 @@ Agent_06 (Synthesis Writer):
     - Use standard technical nomenclature (e.g., "State-Space", "Non-linear Control", "Factor Graph SLAM")
     - Identify exactly 1 "Cross-Domain Synergy": a specific, architecturally grounded instance where a
       breakthrough in Section 5 (General Robotics & AI) maps to a persistent challenge in Sections 1–4
-    - Substitute {{now}} with the actual current date in all output
+    - Substitute today with the actual current date in all output
 
   OUTPUT MODES (produce both):
 
@@ -116,7 +114,7 @@ Agent_06 (Synthesis Writer):
       Full digest formatted for direct reading.
 
     Mode_B — Make.com Automation JSON Payload:
-      Produce a valid JSON object with this exact schema (substitute {{now}} with actual date):
+      Produce a valid JSON object with this exact schema (substitute today with actual date):
       {
         "date": "<YYYY-MM-DD>",
         "sections": [
