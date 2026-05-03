@@ -30,49 +30,84 @@ jobs:
         with:
           node-version: "20"
       
-      - name: Install Claude Code
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        
+      - name: Install Claude
         run: npm install -g @anthropic-ai/claude-code@2.1.126
+
+      - name: Install ruflo
+        run: npm install -g ruflo@3.6.12
+        
+      - name: Install dependencies
+        run: npm install
       
-      - name: Initialize Ruflo Environment
+      - name: Initialize Ruflo
+        run: npx ruflo@latest init --force
+      
+      - name: Initialize Ruflo memory
         run: |
-          # npx ruflo@latest init --force automatically configures the MCP bridge
-          npx ruflo@latest init --force
           npx ruflo@latest memory init
-          npx ruflo@latest start --daemon
           
-      - name: Verify Environment
+      - name: Start Ruflo daemon
         run: |
+          npx ruflo@latest start 
+          rm .daemon/daemon.pid
+          npm install --save-dev typescript
+          yarn add typescript --dev
+      
+      - name: Verify protocol exists
+        run: |
+          env | grep _API_KEY
           test -f protocol.txt
-          npx ruflo@latest doctor
-          npx -y @anthropic-ai/claude-code mcp list
-
-      - name: Run Autonomous Research Task
+          echo "protocol.txt found"
+          
+          
+      - name: Run Claude with Ruflo protocol
         run: |
+          npx -y @anthropic-ai/claude-code mcp add ruflo
+          npx -y @anthropic-ai/claude-code mcp list
+          npx ruflo@latest doctor
+          npx ruflo@latest daemon status || echo "DAEMON_NOT_RUNNING"
           export TODAY=$(date +'%Y-%m-%d')
-          mkdir -p outputs
-          
-          # Using heredoc to pass the multi-line prompt to Claude
-          claude --dangerously-skip-permissions <<EOF
-          Today is $TODAY. 
-          Use this as the reference date for all paper filtering.
-          
-          You are running inside GitHub Actions using the Ruflo orchestration layer.
-          
-          TASK:
-          1. Read protocol.txt from the repository root.
-          2. Follow protocol.txt exactly as the source of truth.
-          3. Enforce the strict 7-day research window.
-          4. Use available API keys (Tavily, SerpApi, etc.) via Ruflo tools.
-          
-          OUTPUTS REQUIRED:
-          - Save a markdown report to outputs/research-digest.md
-          - Save raw data to outputs/research-payload.json
-          
-          Execute the research workflow now.
-          EOF
+          set -euo pipefail
 
-      - name: Verify and Upload Outputs
-        if: success()
+          pwd
+          ls -la
+          test -f protocol.txt
+      
+          mkdir -p outputs
+      
+          npx -y @anthropic-ai/claude-code --dangerously-skip-permissions -p "$(cat protocol.txt)"
+          
+          Today is $TODAY.
+          Use this as the reference date for all paper filtering
+          
+          You are running inside GitHub Actions.
+
+          Use Ruflo as the orchestration/MCP/plugin layer.
+
+          Read the file protocol.txt from the repository root.
+          Follow protocol.txt exactly.
+
+          Important:
+          - Treat protocol.txt as the source of truth.
+          - Enforce the strict 7-day research window.
+          - Use the available API keys from environment variables.
+          - Produce both outputs:
+            1. outputs/research-digest.md
+            2. outputs/research-payload.json
+
+          Now execute the research workflow described in protocol.txt.
+          EOF
+          )"
+
+          echo "Checking outputs..."
+          ls -la outputs
+          test -s outputs/research-digest.md
+          test -s outputs/research-payload.json
+
+      - name: Upload research outputs
         uses: actions/upload-artifact@v4
         with:
           name: ruflo-research-output
