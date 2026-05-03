@@ -16,6 +16,29 @@ Temporal_Constraint:
     - If date is completely unavailable → mark "UNVERIFIED_DATE"; max 1 UNVERIFIED_DATE per section allowed
   NOTE: Ruflo handles model selection automatically via its SONA routing engine.
         Agents MUST log the model they are actually running on at execution start (see logging instructions per agent).
+[SONA_ROUTING_POLICY]
+SONA routing is autonomous.
+
+The router MUST dynamically select the best available model
+for each task without manual provider assignment.
+
+Goals:
+
+Maximize reasoning quality
+Minimize latency
+Minimize token cost
+Avoid provider monoculture
+Utilize healthy providers opportunistically
+
+Available_Providers:
+ANTHROPIC_API_KEY
+OPENAI_API_KEY
+GOOGLE_API_KEY
+
+Anti_Collapse_Rule:
+If all tasks converge to a single provider while
+other providers remain healthy,
+SONA should rebalance opportunistically.
 
 [AGENT_ASSIGNMENTS]
 
