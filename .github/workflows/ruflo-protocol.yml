@@ -96,8 +96,6 @@ jobs:
             2. outputs/research-payload.json
 
           Now execute the research workflow described in protocol.txt.
-          EOF
-          )"
 
           echo "Checking outputs..."
           ls -la outputs
