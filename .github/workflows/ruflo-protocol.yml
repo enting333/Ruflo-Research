@@ -52,7 +52,7 @@ jobs:
           mkdir -p outputs
           
           # Using heredoc to pass the multi-line prompt to Claude
-          claude --dangerously-skip-permissions --non-interactive <<EOF
+          claude --dangerously-skip-permissions <<EOF
           Today is $TODAY. 
           Use this as the reference date for all paper filtering.
           
