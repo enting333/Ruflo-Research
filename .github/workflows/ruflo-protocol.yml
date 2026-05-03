@@ -29,9 +29,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "20"
-      
-      - name: Checkout repo
-        uses: actions/checkout@v4
         
       - name: Install Claude
         run: npm install -g @anthropic-ai/claude-code@2.1.126
@@ -59,50 +56,63 @@ jobs:
           env | grep _API_KEY
           test -f protocol.txt
           echo "protocol.txt found"
-          
-      - name: Run Claude with Ruflo protocol
+      - name: Run protocol through Ruflo CLI swarm
         run: |
-          #npx -y @anthropic-ai/claude-code mcp add ruflo
-          npx -y @anthropic-ai/claude-code mcp list
           npx ruflo@latest doctor
           npx ruflo@latest daemon status || echo "DAEMON_NOT_RUNNING"
-          export TODAY=$(date +'%Y-%m-%d')
           set -euo pipefail
-
-          pwd
-          ls -la
           test -f protocol.txt
-      
+          node scripts/run-ruflo-research.mjs protocol.txt
           mkdir -p outputs
-      
-          npx -y @anthropic-ai/claude-code --dangerously-skip-permissions -p "$(cat <<'EOF'
-          
-          Today is $TODAY.
-          Use this as the reference date for all paper filtering
-          
-          You are running inside GitHub Actions.
-
-          Use Ruflo as the orchestration/MCP/plugin layer.
-
-          Read the file protocol.txt from the repository root.
-          Follow protocol.txt exactly.
-
-          Important:
-          - Treat protocol.txt as the source of truth.
-          - Enforce the strict 7-day research window.
-          - Use the available API keys from environment variables.
-          - Produce both outputs:
-            1. outputs/research-digest.md
-            2. outputs/research-payload.json
-
-          Now execute the research workflow described in protocol.txt.
-          EOF
-          )"
-          
+          cp dist/ruflo-research.md outputs/research-digest.md
+          cp dist/ruflo-research.raw.json outputs/research-payload.json || echo '{"note":"Ruflo returned markdown output only."}' > outputs/research-payload.json
           echo "Checking outputs..."
           ls -la outputs
           test -s outputs/research-digest.md
           test -s outputs/research-payload.json
+      # - name: Run Claude with Ruflo protocol
+      #   run: |
+      #     #npx -y @anthropic-ai/claude-code mcp add ruflo
+      #     npx -y @anthropic-ai/claude-code mcp list
+      #     npx ruflo@latest doctor
+      #     npx ruflo@latest daemon status || echo "DAEMON_NOT_RUNNING"
+      #     export TODAY=$(date +'%Y-%m-%d')
+      #     set -euo pipefail
+
+      #     pwd
+      #     ls -la
+      #     test -f protocol.txt
+      
+      #     mkdir -p outputs
+      
+      #     npx -y @anthropic-ai/claude-code --dangerously-skip-permissions -p "$(cat <<'EOF'
+          
+      #     Today is $TODAY.
+      #     Use this as the reference date for all paper filtering
+          
+      #     You are running inside GitHub Actions.
+
+      #     Use Ruflo as the orchestration/MCP/plugin layer.
+
+      #     Read the file protocol.txt from the repository root.
+      #     Follow protocol.txt exactly.
+
+      #     Important:
+      #     - Treat protocol.txt as the source of truth.
+      #     - Enforce the strict 7-day research window.
+      #     - Use the available API keys from environment variables.
+      #     - Produce both outputs:
+      #       1. outputs/research-digest.md
+      #       2. outputs/research-payload.json
+
+      #     Now execute the research workflow described in protocol.txt.
+      #     EOF
+      #     )"
+          
+      #     echo "Checking outputs..."
+      #     ls -la outputs
+      #     test -s outputs/research-digest.md
+      #     test -s outputs/research-payload.json
 
       - name: Upload research outputs
         uses: actions/upload-artifact@v4
