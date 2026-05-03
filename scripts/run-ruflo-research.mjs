@@ -81,13 +81,22 @@ run("npx", ["-y", "ruflo@latest", "init", "--force"]);
 const outputFile = "dist/ruflo-research.md";
 const jsonFile = "dist/ruflo-research.raw.json";
 
+// const rufloAttempts = [
+//   ["npx", ["-y", "ruflo@latest", "swarm", prompt, "--agents", "6", "--topology", "hierarchical", "--parallel", "--output-format", "markdown", "--output-file", outputFile]],
+//   ["npx", ["-y", "ruflo@latest", "swarm", prompt, "--agents", "6", "--topology", "hierarchical", "--parallel", "--output-file", jsonFile]]
+//   // ["npx", ["-y", "@claude-flow/cli@latest", "swarm", prompt, "--agents", "6", "--topology", "hierarchical", "--parallel", "--output-format", "json", "--output-file", jsonFile]]
+//   ["npx", ["-y", "@claude-flow/cli@latest", "swarm", prompt, "--agents", "6", "--topology", "hierarchical", "--parallel", "--output-file", jsonFile]]
+// ];
 const rufloAttempts = [
+  // Entry 1: Current standard for Ruflo (Markdown)
   ["npx", ["-y", "ruflo@latest", "swarm", prompt, "--agents", "6", "--topology", "hierarchical", "--parallel", "--output-format", "markdown", "--output-file", outputFile]],
-  ["npx", ["-y", "ruflo@latest", "swarm", prompt, "--agents", "6", "--topology", "hierarchical", "--parallel", "--output-file", jsonFile]]
-  // ["npx", ["-y", "@claude-flow/cli@latest", "swarm", prompt, "--agents", "6", "--topology", "hierarchical", "--parallel", "--output-format", "json", "--output-file", jsonFile]]
+
+  // Entry 2: JSON variant (Note the comma after the closing bracket)
+  ["npx", ["-y", "ruflo@latest", "swarm", prompt, "--agents", "6", "--topology", "hierarchical", "--parallel", "--output-file", jsonFile]],
+
+  // Entry 3: Legacy support for Claude-Flow CLI (In case the environment hasn't updated the alias)
   ["npx", ["-y", "@claude-flow/cli@latest", "swarm", prompt, "--agents", "6", "--topology", "hierarchical", "--parallel", "--output-file", jsonFile]]
 ];
-
 let ok = false;
 function hasNonEmpty(path) {
   return existsSync(path) && statSync(path).size > 0;
