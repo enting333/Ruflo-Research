@@ -1,0 +1,41 @@
+name: RuFlo Autonomous Agent
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      goal:
+        description: 'The objective for the agent'
+        required: true
+        default: 'Run a security audit and suggest fixes'
+
+jobs:
+  run-agent:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install RuFlo CLI
+        run: npm install -g @claude-flow/cli@alpha
+
+      - name: Initialize RuFlo
+        run: claude-flow init --yes
+
+      - name: Execute Agent Goal
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
+          SERPAPI_API_KEY: ${{ secrets.SERPAPI_API_KEY }}
+        run: |
+          # The orchestrate command uses the GOAP engine to plan and execute
+          claude-flow orchestrate "${{ github.event.inputs.goal || 'Check code quality and format files' }}" \
+            --agents 3 \
+            --parallel
