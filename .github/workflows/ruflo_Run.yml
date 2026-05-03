@@ -25,7 +25,10 @@ jobs:
         run: npm install -g @claude-flow/cli@alpha
 
       - name: Initialize RuFlo
-        run: claude-flow init --yes
+        run: npx claude-flow@latest init --force
+
+      - name: Spawn Hive
+        run: npx claude-flow hive init --topology mesh --agents 3
 
       - name: Execute Agent Goal
         env:
@@ -36,6 +39,6 @@ jobs:
           SERPAPI_API_KEY: ${{ secrets.SERPAPI_API_KEY }}
         run: |
           # The orchestrate command uses the GOAP engine to plan and execute
-          claude-flow orchestrate "${{ github.event.inputs.goal || 'Check code quality and format files' }}" \
-            --agents 3 \
+          npx claude-flow@latest swarm "Primary_Goal: PhD-level technical synthesis; zero marketing fluff; actionable marine/underwater robotics application. Cross-domain robotics and general AI are in scope if transferability to underwater platforms is arguable. Section 1: Marine Autonomy & Reasoning Section 2: Hydrodynamics Section 3: Marine Technologies Section 4: AUV Systems Section 5: General Robotics & Articial Intelligence (Related to Robotics)" \
+            --agents 6 \
             --parallel
