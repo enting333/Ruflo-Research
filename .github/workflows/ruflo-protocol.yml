@@ -48,8 +48,7 @@ jobs:
       - name: Initialize Ruflo memory
         run: |
           npx ruflo@latest memory init
-          npx ruflo@latest init --non-interactive Set Model inject dynamic date export TODAY="$(date" +'%Y-%m-%d')
-      
+          
       - name: Start Ruflo daemon
         run: |
           npx ruflo@latest start 
