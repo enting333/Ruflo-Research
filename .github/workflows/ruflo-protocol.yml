@@ -58,6 +58,7 @@ jobs:
         
       - name: Run Claude with Ruflo protocol
         run: |
+          TODAY=$(date +'%Y-%m-%d')
           set -euo pipefail
 
           pwd
@@ -68,7 +69,12 @@ jobs:
       
           npx @anthropic-ai/claude-code@latest \
             --dangerously-skip-permissions \
-            -p "$(cat <<'EOF'
+            -p "$(cat << EOF
+          Today is $TODAY.
+          Use this as the reference date for all paper filtering
+          $(cat protocol.txt)
+          EOF
+          )"
           You are running inside GitHub Actions.
 
           Use Ruflo as the orchestration/MCP/plugin layer.
