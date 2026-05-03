@@ -83,9 +83,9 @@ const jsonFile = "dist/ruflo-research.raw.json";
 
 const rufloAttempts = [
   ["npx", ["-y", "ruflo@latest", "swarm", prompt, "--agents", "6", "--topology", "hierarchical", "--parallel", "--output-format", "markdown", "--output-file", outputFile]],
-  ["npx", ["-y", "ruflo@latest", "orchestrate", prompt, "--agents", "6", "--topology", "hierarchical", "--parallel", "--output-file", outputFile]],
+  ["npx", ["-y", "ruflo@latest", "swarm", prompt, "--agents", "6", "--topology", "hierarchical", "--parallel", "--output-file", jsonFile]]
   // ["npx", ["-y", "@claude-flow/cli@latest", "swarm", prompt, "--agents", "6", "--topology", "hierarchical", "--parallel", "--output-format", "json", "--output-file", jsonFile]]
-  ["npx", ["-y", "@claude-flow/cli@latest", "orchestrate", prompt, "--agents", "6", "--topology", "hierarchical", "--parallel", "--output-file", jsonFile]]
+  ["npx", ["-y", "@claude-flow/cli@latest", "swarm", prompt, "--agents", "6", "--topology", "hierarchical", "--parallel", "--output-file", jsonFile]]
 ];
 
 let ok = false;
