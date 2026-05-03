@@ -34,7 +34,10 @@ jobs:
         uses: actions/checkout@v4
         
       - name: Install Claude
-        run: npm install -g @anthropic-ai/claude-code@latest
+        run: npm install -g @anthropic-ai/claude-code@2.1.126
+
+      - name: Install ruflo
+        run: npm install -g ruflo@3.6.12
         
       - name: Install dependencies
         run: npm install
@@ -55,9 +58,17 @@ jobs:
         
       - name: Run Claude with Ruflo protocol
         run: |
-          mkdir -p outputs
+          set -euo pipefail
 
-          npx @anthropic-ai/claude-code@latest -p "$(cat <<'EOF'
+          pwd
+          ls -la
+          test -f protocol.txt
+      
+          mkdir -p outputs
+      
+          npx @anthropic-ai/claude-code@latest \
+            --dangerously-skip-permissions \
+            -p "$(cat <<'EOF'
           You are running inside GitHub Actions.
 
           Use Ruflo as the orchestration/MCP/plugin layer.
@@ -76,6 +87,11 @@ jobs:
           Now execute the research workflow described in protocol.txt.
           EOF
           )"
+
+          echo "Checking outputs..."
+          ls -la outputs
+          test -s outputs/research-digest.md
+          test -s outputs/research-payload.json
 
       - name: Upload research outputs
         uses: actions/upload-artifact@v4
