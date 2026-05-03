@@ -1,5 +1,6 @@
 import { spawnSync } from "node:child_process";
-import { mkdirSync, readFileSync, writeFileSync, existsSync } from "node:fs";
+// import { mkdirSync, readFileSync, writeFileSync, existsSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync, existsSync, statSync, rmSync } from "node:fs";
 import { resolve } from "node:path";
 
 const requiredSecrets = [
@@ -83,17 +84,29 @@ const jsonFile = "dist/ruflo-research.raw.json";
 const rufloAttempts = [
   ["npx", ["-y", "ruflo@latest", "swarm", prompt, "--agents", "6", "--topology", "hierarchical", "--parallel", "--output-format", "markdown", "--output-file", outputFile]],
   ["npx", ["-y", "ruflo@latest", "orchestrate", prompt, "--agents", "6", "--topology", "hierarchical", "--parallel", "--output-file", outputFile]],
-  ["npx", ["-y", "@claude-flow/cli@latest", "swarm", prompt, "--agents", "6", "--topology", "hierarchical", "--parallel", "--output-format", "json", "--output-file", jsonFile]]
+  // ["npx", ["-y", "@claude-flow/cli@latest", "swarm", prompt, "--agents", "6", "--topology", "hierarchical", "--parallel", "--output-format", "json", "--output-file", jsonFile]]
+  ["npx", ["-y", "@claude-flow/cli@latest", "orchestrate", prompt, "--agents", "6", "--topology", "hierarchical", "--parallel", "--output-file", jsonFile]]
 ];
 
 let ok = false;
+function hasNonEmpty(path) {
+  return existsSync(path) && statSync(path).size > 0;
+}
 for (const [cmd, args] of rufloAttempts) {
+  rmSync(outputFile, { force: true });
+  rmSync(jsonFile, { force: true });
   const status = run(cmd, args);
-  if (status === 0) {
+  // if (status === 0) {
+  const producedArtifact = hasNonEmpty(outputFile) || hasNonEmpty(jsonFile);
+  if (status === 0 && producedArtifact) {
     ok = true;
     break;
   }
-  console.warn(`Attempt failed with exit code ${status}; trying next documented Ruflo/Claude-Flow entrypoint.`);
+  // console.warn(`Attempt failed with exit code ${status}; trying next documented Ruflo/Claude-Flow entrypoint.`);
+  const reason = status !== 0
+    ? `exit code ${status}`
+    : "command exited 0 but produced no output artifact";
+  console.warn(`Attempt failed (${reason}); trying next documented Ruflo/Claude-Flow entrypoint.`);
 }
 
 if (!ok) {
