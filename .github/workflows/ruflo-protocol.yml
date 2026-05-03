@@ -41,15 +41,15 @@ jobs:
       
       - name: Initialize Ruflo
         run: npx ruflo@latest init --force
-      
-      - name: Initialize Ruflo memory
-        run: |
-          npx ruflo@latest memory init
-          
+        
       - name: Start Ruflo daemon
         run: |
           npx ruflo@latest start 
           npx ruflo@latest daemon start 
+          
+      - name: Initialize Ruflo memory
+        run: |
+          npx ruflo@latest memory init
       
       - name: Verify protocol exists
         run: |
