@@ -52,8 +52,6 @@ jobs:
       - name: Start Ruflo daemon
         run: |
           npx ruflo@latest start 
-          npx ruflo@latest daemon status || echo "DAEMON_NOT_RUNNING"
-          npx ruflo@latest agents list
       
       - name: Verify protocol exists
         run: |
@@ -65,6 +63,7 @@ jobs:
         run: |
           npx -y @anthropic-ai/claude-code mcp add ruflo -- npx -y ruflo@latest mcp start
           npx -y @anthropic-ai/claude-code mcp list
+          npx ruflo@latest daemon status || echo "DAEMON_NOT_RUNNING"
           export TODAY=$(date +'%Y-%m-%d')
           set -euo pipefail
 
