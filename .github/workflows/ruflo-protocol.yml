@@ -59,48 +59,60 @@ jobs:
           test -f protocol.txt
           echo "protocol.txt found"
           
-          
-      - name: Run Claude with Ruflo protocol
+      - name: Execute Multi-Model Research via Ruflo Hive-Mind
+        env:
+          # Ensure ALL keys are available for the specific models you want to use
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
+          SERPAPI_API_KEY: ${{ secrets.SERPAPI_API_KEY }}
         run: |
-          #npx -y @anthropic-ai/claude-code mcp add ruflo
-          npx -y @anthropic-ai/claude-code mcp list
-          npx ruflo@latest doctor
-          npx ruflo@latest daemon status || echo "DAEMON_NOT_RUNNING"
-          export TODAY=$(date +'%Y-%m-%d')
-          set -euo pipefail
-
-          pwd
-          ls -la
-          test -f protocol.txt
-      
-          mkdir -p outputs
-      
-          npx -y @anthropic-ai/claude-code --dangerously-skip-permissions -p "$(cat protocol.txt)"
+          # Use the 'task' command to trigger the Ruflo routing engine directly
+          # This forces it to look at your protocol and use the designated models.
+          npx ruflo@latest task "Execute the research workflow in protocol.txt" --mode autonomous --output outputs/    
           
-          Today is $TODAY.
-          Use this as the reference date for all paper filtering
+      # - name: Run Claude with Ruflo protocol
+      #   run: |
+      #     #npx -y @anthropic-ai/claude-code mcp add ruflo
+      #     npx -y @anthropic-ai/claude-code mcp list
+      #     npx ruflo@latest doctor
+      #     npx ruflo@latest daemon status || echo "DAEMON_NOT_RUNNING"
+      #     export TODAY=$(date +'%Y-%m-%d')
+      #     set -euo pipefail
+
+      #     pwd
+      #     ls -la
+      #     test -f protocol.txt
+      
+      #     mkdir -p outputs
+      
+      #     npx -y @anthropic-ai/claude-code --dangerously-skip-permissions -p "$(cat protocol.txt)"
           
-          You are running inside GitHub Actions.
+      #     Today is $TODAY.
+      #     Use this as the reference date for all paper filtering
+          
+      #     You are running inside GitHub Actions.
 
-          Use Ruflo as the orchestration/MCP/plugin layer.
+      #     Use Ruflo as the orchestration/MCP/plugin layer.
 
-          Read the file protocol.txt from the repository root.
-          Follow protocol.txt exactly.
+      #     Read the file protocol.txt from the repository root.
+      #     Follow protocol.txt exactly.
 
-          Important:
-          - Treat protocol.txt as the source of truth.
-          - Enforce the strict 7-day research window.
-          - Use the available API keys from environment variables.
-          - Produce both outputs:
-            1. outputs/research-digest.md
-            2. outputs/research-payload.json
+      #     Important:
+      #     - Treat protocol.txt as the source of truth.
+      #     - Enforce the strict 7-day research window.
+      #     - Use the available API keys from environment variables.
+      #     - Produce both outputs:
+      #       1. outputs/research-digest.md
+      #       2. outputs/research-payload.json
 
-          Now execute the research workflow described in protocol.txt.
+      #     Now execute the research workflow described in protocol.txt.
 
-          echo "Checking outputs..."
-          ls -la outputs
-          test -s outputs/research-digest.md
-          test -s outputs/research-payload.json
+      #     echo "Checking outputs..."
+      #     ls -la outputs
+      #     test -s outputs/research-digest.md
+      #     test -s outputs/research-payload.json
 
       - name: Upload research outputs
         uses: actions/upload-artifact@v4
