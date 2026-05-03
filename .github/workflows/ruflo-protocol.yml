@@ -46,19 +46,27 @@ jobs:
         run: npx ruflo@latest init --force
       
       - name: Initialize Ruflo memory
-        run: npx ruflo@latest memory init
+        run: |
+          npx ruflo@latest memory init
+          npx ruflo@latest init --non-interactive Set Model inject dynamic date export TODAY="$(date" +'%Y-%m-%d')
       
       - name: Start Ruflo daemon
-        run: npx ruflo@latest start
+        run: |
+          npx ruflo@latest start 
+          npx ruflo@latest daemon status || echo "DAEMON_NOT_RUNNING"
+          npx ruflo@latest agents list
       
       - name: Verify protocol exists
         run: |
           test -f protocol.txt
           echo "protocol.txt found"
-        
+          
+          npx ruflo@latest doctor
       - name: Run Claude with Ruflo protocol
         run: |
-          TODAY=$(date +'%Y-%m-%d')
+          npx -y @anthropic-ai/claude-code mcp add ruflo -- npx -y ruflo@latest mcp start
+          npx -y @anthropic-ai/claude-code mcp list
+          export TODAY=$(date +'%Y-%m-%d')
           set -euo pipefail
 
           pwd
@@ -67,14 +75,11 @@ jobs:
       
           mkdir -p outputs
       
-          npx @anthropic-ai/claude-code@latest \
-            --dangerously-skip-permissions \
-            -p "$(cat << EOF
+          npx -y @anthropic-ai/claude-code --dangerously-skip-permissions -p "$(cat protocol.txt)"
+          
           Today is $TODAY.
           Use this as the reference date for all paper filtering
-          $(cat protocol.txt)
-          EOF
-          )"
+          
           You are running inside GitHub Actions.
 
           Use Ruflo as the orchestration/MCP/plugin layer.
