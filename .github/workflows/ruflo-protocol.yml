@@ -59,7 +59,7 @@ jobs:
           test -f protocol.txt
           echo "protocol.txt found"
           
-      - name: Execute Multi-Model Research via Ruflo Hive-Mind
+      - name: Run Claude with Ruflo protocol
         env:
           # Ensure ALL keys are available for the specific models you want to use
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
@@ -68,10 +68,12 @@ jobs:
           TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
           SERPAPI_API_KEY: ${{ secrets.SERPAPI_API_KEY }}
         run: |
-          # Use the 'task' command to trigger the Ruflo routing engine directly
-          # This forces it to look at your protocol and use the designated models.
-          npx ruflo@latest task "Execute the research workflow in protocol.txt" --mode autonomous --output outputs/    
-          
+          npx -y @anthropic-ai/claude-code mcp list
+          npx ruflo@latest doctor
+          export TODAY=$(date +'%Y-%m-%d')
+          npx ruflo@latest sparc run research "Execute protocol.txt" \
+            --mode autonomous \
+            --date "$TODAY"
       # - name: Run Claude with Ruflo protocol
       #   run: |
       #     #npx -y @anthropic-ai/claude-code mcp add ruflo
