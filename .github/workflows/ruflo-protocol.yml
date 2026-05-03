@@ -62,7 +62,7 @@ jobs:
           
       - name: Run Claude with Ruflo protocol
         run: |
-          npx -y @anthropic-ai/claude-code mcp add ruflo
+          #npx -y @anthropic-ai/claude-code mcp add ruflo
           npx -y @anthropic-ai/claude-code mcp list
           npx ruflo@latest doctor
           npx ruflo@latest daemon status || echo "DAEMON_NOT_RUNNING"
